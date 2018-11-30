@@ -1,38 +1,38 @@
 import React from 'react'
 import PackageImage from '../package.jpeg'
 
-class TransactionCard extends React.Component {
+class ListingCard extends React.Component {
 
   render() {
     return (
       <div className="ui column">
 
-        <div className="ui card" onClick={() => {this.props.handleClick(this.props.transaction)}}>
+        <div className="ui card" onClick={() => {this.props.handleClick(this.props.listing)}}>
           <div className="content">
             <div className="Medium Header">
-              <h3>Tracking #{((this.props.transaction.id * 12345) + 54321)}</h3>
+              <h3>Tracking #{((this.props.listing.id * 12345) + 54321)}</h3>
 
 
             </div>
           </div>
           <div className="image">
-            <img alt={PackageImage} src={this.props.transaction.image} />
+            <img alt={PackageImage} src={this.props.listing.image} />
           </div>
 
           <div className="extra content">
             <span>
               <h3>Status</h3>
-              <h4>{this.props.transaction.status}</h4>
+              <h4>{this.props.listing.status}</h4>
             </span>
 
             <span>
               <p>
-                {this.props.transaction.pickupLocal}
+                {this.props.listing.pickupLocal}
               </p>
             </span>
             <span>
               <p>
-                {this.props.transaction.dropoffLocal}
+                {this.props.listing.dropoffLocal}
               </p>
             </span>
           </div>
@@ -43,4 +43,4 @@ class TransactionCard extends React.Component {
 
 };
 
-export default TransactionCard;
+export default ListingCard;

@@ -1,7 +1,5 @@
 class Api::V1::AuthController < ApplicationController
 
-:username, :password, :bio, :avatar, :firstName, :lastName, :deliveries, :phoneNumber, :address)
-
   def create # POST /api/v1/login
     @user = User.find_by(username: params[:username])
     if @user && @user.authenticate(params[:password])
@@ -12,6 +10,7 @@ class Api::V1::AuthController < ApplicationController
         message: "signed in",
         token: token,
         user_info: {
+          id: @user.id,
           bio: @user.bio,
           avatar: @user.avatar,
           username: @user.username,

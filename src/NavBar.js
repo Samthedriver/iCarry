@@ -1,71 +1,99 @@
-import React, { Component } from 'react'
+import React, { Fragment, Component } from 'react'
 import { Menu, Input, Segment } from 'semantic-ui-react'
 import deliverLogo from './deliverLogo.jpg'
-import {Link, NavLink} from 'react-router-dom'
-
-class NavBar extends Component {
-  state = { activeItem: 'home' }
-
-  handleItemClick = (e, { name }) => this.setState({ activeItem: name })
-
-  render() {
-    const { activeItem } = this.state
-
-    return (
-      <Segment inverted>
-        <Menu inverted secondary>
-
-          <Link exact to="/">
-          <Menu.Item name='Home' active={activeItem === 'home'} />
-          </Link>
-          <Link exact to="/login">
-          <Menu.Item
-            name='Login'
-            active={activeItem === 'login'}
-          />
-          </Link>
-          <Link exact to="/signup">
-          <Menu.Item
-            name='Signup And Be A Carrier'
-            active={activeItem === 'signup'}
-          />
-          </Link>
-          <Link exact to="/send">
-          <Menu.Item
-            name='Send an Item'
-            active={activeItem === 'send'}
-          />
-          </Link>
+import { Link, NavLink, withRouter } from 'react-router-dom'
 
 
-          <Menu.Item
-            name='Personal shipment from within your community.'>
-            <h3>iCarry</h3>
-          </Menu.Item>
+const NavBar = ({ location: { pathname }, logged_in, logout, searchPath, handleSearchChange}) => {
+  return (
+    <Segment inverted>
+      <Menu inverted secondary>
+        {
+          logged_in ?
+          (
+            <Fragment>
+              <Menu.Item
+                as={NavLink}
+                to="/profile"
+                name="Profile"
+                active={pathname === "/profile"}
+              />
+              <Menu.Item
+                as={NavLink}
+                to="/pickups"
+                name="Pending Pickups"
+                active={pathname === "/pickups"}
+              />
+              <Menu.Item
+                as={NavLink}
+                to="/dropoffs"
+                name="Pending Dropoffs"
+                active={pathname === "/dropoffs"}
+              />
+              <Menu.Item
+                as={NavLink}
+                to="/request"
+                name="Add A Pickup"
+                active={pathname === "/request"}
+              />
+              <Menu.Menu position="right">
+                <Menu.Item
+                  to="/logout"
+                  name="Logout"
+                  onClick={logout}
+                />
+              </Menu.Menu>
+            </Fragment>
+          )
 
-          <Menu.Item
-            name='Personal shipment from within your community.'
-          />
+          :
 
-          <Link exact to={this.props.searchPath}>
-          <Menu.Item
-            name='Track your shipment'
-            active={activeItem === 'track'}
-            classname='icon'
-            icon='search'
-          />
-          </Link>
-          <Link exact to= '/'>
-          <Menu.Item>
-            <Input onChange={this.props.handleSearchChange} placeholder='Track your item.' />
-          </Menu.Item>
-          </Link>
+          (
+            <Fragment>
+              <Menu.Item
+                as={NavLink}
+                to="/login"
+                name="Login"
+                active={pathname === "/login"}
+              />
+              <Menu.Item
+                as={NavLink}
+                to="/signup"
+                name="Signup And Be A Carrier"
+                active={pathname === "/signup"}
+              />
+              <Menu.Item
+                as={NavLink}
+                to="/send"
+                name="Send A Package"
+                active={pathname === "/send"}
+              />
+              <Menu.Menu position="right">
+              <Menu.Item>
+                <h3>iCarry</h3>
+              </Menu.Item>
 
+              <Menu.Item
+                name='Personal shipment from within your community.'
+              />
 
-        </Menu>
-      </Segment>
-    )
-  }
+              <Menu.Item
+                as={NavLink}
+                to={searchPath}
+                name="Track your shipment"
+                classname='icon'
+                icon='search'
+              />
+              <Menu.Item>
+                <Input onChange={handleSearchChange} placeholder='Track your item.' />
+              </Menu.Item>
+              </Menu.Menu>
+            </Fragment>
+          )
+        }
+      </Menu>
+    </Segment>
+  )
 }
 
-export default NavBar
+export default withRouter(NavBar);
