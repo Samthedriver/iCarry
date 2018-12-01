@@ -13,10 +13,20 @@ import TransactionCollection from './Container/TransactionCollection.js'
 import MapContainer from './Container/MapContainer.js'
 import GeoSelect from './Container/GeoSelect.js';
 
-
-
+var currentPosition = {};
 
 class App extends Component {
+
+  getCurrentPosition = (position) => {
+    console.log(position.coords.latitude)
+    console.log(position.coords.longitude)
+    currentPosition = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+    }
+
+  }
+
   constructor() {
     super();
     this.state = {
@@ -30,23 +40,14 @@ class App extends Component {
     }
   }
 
-  getCurrentPosition = (position) => {
-    console.log(position.coords.latitude)
-    console.log(position.coords.longitude)
-    this.setState({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-    })
-  }
-
   componentDidMount() {
     navigator.geolocation.getCurrentPosition(this.getCurrentPosition);
+
     fetch('http://localhost:3001/api/v1/transactions')
       .then(response => response.json())
         .then(data => {
           console.log(data)
           this.setState({allTransactions: data})
-          navigator.geolocation.getCurrentPosition(this.getCurrentPosition);
         })
   }
 
@@ -88,7 +89,6 @@ class App extends Component {
           logged_in={!!this.state.userInfo}
           logout={this.logout}
         />
-        <MapContainer lat={this.state.lat} lng={this.state.lng} />
 
         <Switch>
           <Route exact path="/" render={() => <Redirect to="/profile" />} />
@@ -169,7 +169,9 @@ class App extends Component {
           />
           <Route component={NotFound} />
         </Switch>
+        <MapContainer currentPosition={currentPosition} />
       </Fragment>
+
     );
   }
 }

@@ -3,7 +3,20 @@ import { Form } from 'semantic-ui-react'
 import GeoSelect from './GeoSelect.js'
 import Geosuggest from 'react-geosuggest';
 import {Map, InfoWindow, Marker, GoogleApiWrapper} from 'google-maps-react';
+import geolib from 'geolib';
 
+var currentPosition = {};
+const convertToMiles = 1609.344
+var pickup = false;
+var dropoff = false;
+var pickPoint = {};
+var dropPoint = {};
+
+
+var distance = geolib.getDistance(
+    {latitude: 51.5103, longitude: 7.49347},
+    {latitude: "51° 31' N", longitude: "7° 28' E"}
+);
 
 class SendForm extends Component {
   constructor() {
@@ -28,20 +41,50 @@ class SendForm extends Component {
     user_id: 1
   })
 
-  onSelectPickup = (pickup) => {
-    console.log(pickup);
-    console.log(pickup.description);
-    this.setState({
-      pickupLocal: pickup.description
-    })
+  getDistanceInMiles = () => {
+
+    console.log('Pickup Point: ', pickPoint)
+    console.log('Dropoff Point: ', dropPoint)
+    distance = geolib.getDistance(pickPoint, dropPoint)
+    alert('Distance: ', distance)
+    distance = distance / convertToMiles
+    console.log('Distance is ', distance, ' miles.')
   }
 
-  onSelectDropoff = (dropPoint) => {
-    console.log(dropPoint);
-    console.log(dropPoint.description);
+  onSelectPickup = (data) => {
+    console.log(data);
+    console.log(data.description);
+
     this.setState({
-      dropoffLocal: dropPoint.description
-    })
+      pickupLocal: data.description
+    });
+
+    pickPoint = {
+      latitude: data.location.lat,
+      longitude: data.location.lng
+    };
+
+    pickup = true;
+    console.log('Pickup: ', pickPoint);
+  }
+
+  onSelectDropoff = (data) => {
+    console.log(data);
+    console.log(data.description);
+
+    dropPoint = {
+      latitude: data.location.lat,
+      longitude: data.location.lng
+    };
+
+    dropoff = true;
+    console.log('Dropoff: ', dropPoint);
+
+    this.setState({
+      dropoffLocal: data.description
+    });
+
+
   }
 
   handleChange = (e) => {
@@ -127,6 +170,12 @@ class SendForm extends Component {
 
   render() {
     const { value } = this.state
+
+    if(!(this.state.dropoffLocal === '') && !(this.state.pickupLocal === ''))
+    {
+      this.getDistanceInMiles();
+    }
+
     return (
       <div>
       <br/>
@@ -170,7 +219,7 @@ class SendForm extends Component {
               location={new this.props.google.maps.LatLng(53.558572, 9.9278215)}
               radius="20" />
 
-        
+
         <Form.Group widths='equal'>
           <Form.TextArea label='Item Description' placeholder='Describe item or package contents...' name='description' onChange={this.handleChange}/>
           <Form.TextArea label='Delivery Instructions' placeholder='Add any detailed instructions for carrier here...' name='instructions' onChange={this.handleChange}/>
