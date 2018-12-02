@@ -12,6 +12,7 @@ import NotFound from './Component/NotFound.js'
 import TransactionCollection from './Container/TransactionCollection.js'
 import MapContainer from './Container/MapContainer.js'
 import GeoSelect from './Container/GeoSelect.js';
+import Geocode from "react-geocode";
 
 var currentPosition = {};
 
@@ -24,6 +25,9 @@ class App extends Component {
         lat: position.coords.latitude,
         lng: position.coords.longitude
     }
+    this.setState({
+      currentPosition: currentPosition
+    })
 
   }
 
@@ -35,14 +39,26 @@ class App extends Component {
       searchTrackingNumber: '',
       searchPath: '',
       userInfo : null,
-      lat: null,
-      lng: null
+      currentPosition: {}
     }
+
+    // set Google Maps Geocoding API for purposes of quota management. Its optional but recommended.
+    Geocode.setApiKey("AIzaSyBq4yvCqpuZ3v9hUwmQ59npgHg9USG0vwg");
+
+    // Get latidude & longitude from address.
+    Geocode.fromAddress("7309 Lois Lane, Lanham MD").then(
+      response => {
+        const { lat, lng } = response.results[0].geometry.location;
+        console.log("7309 Lois Lane, Lanham MD, lat/lng: ", lat, lng);
+      },
+      error => {
+        console.error(error);
+      }
+    );
   }
 
   componentDidMount() {
     navigator.geolocation.getCurrentPosition(this.getCurrentPosition);
-
     fetch('http://localhost:3001/api/v1/transactions')
       .then(response => response.json())
         .then(data => {
@@ -112,6 +128,7 @@ class App extends Component {
                   statusIndex={0}
                   allTransactions={this.state.allTransactions}
                   onSelectTransaction={this.onSelectTransaction}
+                  currentPosition={this.state.currentPosition}
                 />
             }
           />
@@ -129,6 +146,7 @@ class App extends Component {
                   statusIndex={1}
                   allTransactions={this.state.allTransactions}
                   onSelectTransaction={this.onSelectTransaction}
+                  currentPosition={this.state.currentPosition}
                 />
             }
           />
@@ -146,6 +164,7 @@ class App extends Component {
                   statusIndex={2}
                   allTransactions={this.state.allTransactions}
                   onSelectTransaction={this.onSelectTransaction}
+                  currentPosition={this.state.currentPosition}
                 />
             }
           />
@@ -163,7 +182,10 @@ class App extends Component {
                 console.log(transactionId)
                 let transaction = this.state.allTransactions.find(transaction => transaction.id === transactionId)
                 console.log(transaction)
-                return <TransactionCard transaction={transaction}/>
+                return <TransactionCard
+                          transaction={transaction}
+                          type='track'
+                          currentPosition={this.state.currentPosition}/>
               }
             }
           />

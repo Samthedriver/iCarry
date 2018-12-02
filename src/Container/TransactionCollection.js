@@ -3,8 +3,6 @@ import TransactionCard from '../Component/TransactionCard.js'
 import {Route, Switch, Redirect, withRouter } from 'react-router-dom'
 import ChangeStatusModal from '../Component/ChangeStatusModal.js'
 
-// import RecipeModal from '../Component/RecipeModal.js'
-
 class TransactionCollection extends React.Component {
   constructor() {
     super();
@@ -71,7 +69,16 @@ class TransactionCollection extends React.Component {
         }
     		<div className="row">
           {
-            transactionList.map(transaction => <TransactionCard key={transaction.id} transaction={transaction} handleClick={this.handleClick}/>)
+            transactionList.map(transaction =>
+              <TransactionCard
+                key={transaction.id}
+                transaction={transaction}
+                handleClick={this.handleClick}
+                type='carrier'
+                currentPosition={this.props.currentPosition}
+                status={this.props.status}
+                statusIndex={this.props.statusIndex}
+                />)
           }
     		</div>
   	  </div>

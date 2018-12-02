@@ -1,7 +1,60 @@
 import React from 'react'
 import PackageImage from '../package.jpeg'
+import Geocode from "react-geocode";
+import geolib from 'geolib';
+
+Geocode.setApiKey("AIzaSyBq4yvCqpuZ3v9hUwmQ59npgHg9USG0vwg");
+const convertToMiles = 1609.344
 
 class TransactionCard extends React.Component {
+  constructor(){
+    super();
+    this.state = {
+      distance: null
+    }
+
+  }
+
+  componentDidMount(){
+
+    if(this.props.type==='track')
+      return;
+
+    let address = '';
+    if(this.props.status[this.props.statusIndex] === "picked up by carrier")
+      address = this.props.transaction.dropoffLocal
+    else
+      address = this.props.transaction.pickupLocal
+
+    const origin = {
+      latitude: this.props.currentPosition.lat,
+      longitude: this.props.currentPosition.lng
+    }
+
+    console.log('origin: ', origin)
+    Geocode.fromAddress(address).then(
+      response => {
+        const { lat, lng } = response.results[0].geometry.location;
+        console.log("address coordinates: ", lat, lng);
+
+        const destination = {
+          latitude: lat,
+          longitude: lng
+        }
+
+        console.log(origin)
+        console.log(destination)
+
+        const distance = (geolib.getDistance(origin, destination) / convertToMiles).toFixed(2);
+        this.setState({
+          distance: distance
+        })
+      },
+      error => {
+        console.error(error);
+      }
+    );
+  }
 
   render() {
     return (
@@ -10,9 +63,12 @@ class TransactionCard extends React.Component {
         <div className="ui card" onClick={() => {this.props.handleClick(this.props.transaction)}}>
           <div className="content">
             <div className="Medium Header">
-              <h3>Tracking #{((this.props.transaction.id * 12345) + 54321)}</h3>
-
-
+            {
+              this.props.type === 'carrier' ?
+                <h3>{this.state.distance}-Distance(miles)</h3>
+                :
+                <h3>Tracking #{((this.props.transaction.id * 12345) + 54321)}</h3>
+            }
             </div>
           </div>
           <div className="image">
@@ -21,19 +77,14 @@ class TransactionCard extends React.Component {
 
           <div className="extra content">
             <span>
-              <h3>Status</h3>
-              <h4>{this.props.transaction.status}</h4>
+              <h3>Status-{this.props.transaction.status}</h3>
             </span>
 
             <span>
-              <p>
-                {this.props.transaction.pickupLocal}
-              </p>
+              <p>Pickup Point:{this.props.transaction.pickupLocal}</p>
             </span>
             <span>
-              <p>
-                {this.props.transaction.dropoffLocal}
-              </p>
+              <p>Dropoff Point:{this.props.transaction.dropoffLocal}</p>
             </span>
           </div>
         </div>
