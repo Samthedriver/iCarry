@@ -103,7 +103,7 @@ class SignUpForm extends Component {
       .then(resp => resp.json())
       .then(data => console.log(data))
       .catch(error => console.error(error))
-    this.setState(this.getInitialState())
+    this.props.history.push('/');
   }
 
   render() {

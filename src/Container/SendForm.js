@@ -163,18 +163,14 @@ class SendForm extends Component {
       .then(data => {
         console.log(data)
         alert(`Your tracking number is ${(((data.transaction.id)*12345)+54321)}. Refer to it for up to date delivery status.`)
+        this.props.history.push('/')
+        this.props.handleSubmit(data.transaction)
         })
       .catch(error => console.error(error))
-    this.setState(this.getInitialState())
   }
 
   render() {
     const { value } = this.state
-
-    if(!(this.state.dropoffLocal === '') && !(this.state.pickupLocal === ''))
-    {
-      this.getDistanceInMiles();
-    }
 
     return (
       <div>

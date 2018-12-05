@@ -11,14 +11,15 @@ import Profile from './Component/Profile.js'
 import NotFound from './Component/NotFound.js'
 import TransactionCollection from './Container/TransactionCollection.js'
 import MapContainer from './Container/MapContainer.js'
+import NextStop from './Container/NextStop.js'
 import GeoSelect from './Container/GeoSelect.js';
 import Geocode from "react-geocode";
 
-var currentPosition = {};
 
 class App extends Component {
 
   getCurrentPosition = (position) => {
+    let currentPosition = {};
     console.log(position.coords.latitude)
     console.log(position.coords.longitude)
     currentPosition = {
@@ -39,31 +40,61 @@ class App extends Component {
       searchTrackingNumber: '',
       searchPath: '',
       userInfo : null,
-      currentPosition: {}
+      currentPosition: null,
+      nextStop: {}
     }
-
-    // set Google Maps Geocoding API for purposes of quota management. Its optional but recommended.
-    Geocode.setApiKey("AIzaSyBq4yvCqpuZ3v9hUwmQ59npgHg9USG0vwg");
-
-    // Get latidude & longitude from address.
-    Geocode.fromAddress("7309 Lois Lane, Lanham MD").then(
-      response => {
-        const { lat, lng } = response.results[0].geometry.location;
-        console.log("7309 Lois Lane, Lanham MD, lat/lng: ", lat, lng);
-      },
-      error => {
-        console.error(error);
-      }
-    );
   }
 
+    // set Google Maps Geocoding API for purposes of quota management. Its optional but recommended.
+
   componentDidMount() {
+
     navigator.geolocation.getCurrentPosition(this.getCurrentPosition);
+
     fetch('http://localhost:3001/api/v1/transactions')
       .then(response => response.json())
         .then(data => {
           console.log(data)
-          this.setState({allTransactions: data})
+
+          let allTransactions = data
+          allTransactions.map( transaction => {
+            let pickupCoordinates = {};
+            let dropoffCoordinates = {};
+
+            Geocode.fromAddress(transaction.pickupLocal).then(
+              response => {
+                const { lat, lng } = response.results[0].geometry.location;
+                pickupCoordinates = {
+                  lat: lat,
+                  lng: lng
+                }
+                console.log(pickupCoordinates)
+                transaction.pickupCoordinates = pickupCoordinates;
+
+                Geocode.fromAddress(transaction.dropoffLocal).then(
+                  response => {
+                    const { lat, lng } = response.results[0].geometry.location;
+                    dropoffCoordinates = {
+                      lat: lat,
+                      lng: lng
+                    }
+                    console.log(dropoffCoordinates)
+                    transaction.dropoffCoordinates = dropoffCoordinates;
+
+                  },
+                  error => {
+                    console.error(error);
+                  }
+                );
+              },
+              error => {
+                console.error(error);
+              }
+            );
+
+          })
+
+          this.setState({allTransactions: allTransactions})
         })
   }
 
@@ -79,12 +110,13 @@ class App extends Component {
     this.setState({
       userInfo: userInfo
     })
+    this.props.history.push('/')
   }
 
   logout = () => {
-    localStorage.clear()
-    this.setState({userInfo: null})
-    this.props.history.push('/')
+    localStorage.clear();
+    this.setState({userInfo: null});
+    this.props.history.push('/');
   }
 
   onSelectTransaction = (transaction) => {
@@ -94,26 +126,36 @@ class App extends Component {
     console.log(transaction)
   }
 
+  handleSubmit = (transaction) => {
+    this.setState({
+        allTransactions: [...this.state.allTransactions, transaction]
+      })
+  }
+
   render() {
     const status = ["initiated", "Assigned", "picked up by carrier", "delivered"]
-
+    console.log('inside of render')
     return (
+
       <Fragment>
         <NavBar
           handleSearchChange={this.handleSearchChange} trackingNumber={this.state.searchTrackingNumber}
           searchPath={this.state.searchPath}
           logged_in={!!this.state.userInfo}
           logout={this.logout}
+          userInfo={this.state.userInfo}
         />
-
         <Switch>
-          <Route exact path="/" render={() => <Redirect to="/profile" />} />
+          <Route exact path="/" render={() => null}
+          />
 
           <Route exact path='/signup' component={SignUpForm}/>
 
-          <Route exact path="/login" render={() => <LoginForm updateUserInfo={this.updateUserInfo}/>} />
+          <Route exact path="/login" render={() =>
+            <LoginForm updateUserInfo={this.updateUserInfo}/>} />
 
-          <Route exact path="/profile" render={() => <Profile userInfo={this.state.userInfo}/>} />
+          <Route exact path="/profile" render={() =>
+            <Profile userInfo={this.state.userInfo}/>}/>
 
           <Route
             exact
@@ -169,7 +211,36 @@ class App extends Component {
             }
           />
 
+          <Route
+            exact
+            path="/nextstop"
+            render=
+            {
+              () =>
+                <NextStop
+                  userInfo={this.state.userInfo}
+                  user_id={this.state.userInfo.id}
+                  status={status}
+                  statusIndex={2}
+                  allTransactions={this.state.allTransactions}
+                  onSelectTransaction={this.onSelectTransaction}
+                  currentPosition={this.state.currentPosition}
+                />
+            }
+          />
+
           <Route exact path='/send' component={SendForm}/>
+          <Route
+            exact
+            path="/send"
+            render=
+            {
+              () =>
+                <SendForm
+                  handleSumbit={this.handleSumbit}
+                />
+            }
+          />
 
           <Route
             path='/transactions/:id'
@@ -191,11 +262,18 @@ class App extends Component {
           />
           <Route component={NotFound} />
         </Switch>
-        <MapContainer currentPosition={currentPosition} />
+        {
+          (!this.state.currentPosition) ? null :
+            <MapContainer
+              allTransactions={this.state.allTransactions}
+              currentPosition={this.state.currentPosition}
+            />
+        }
       </Fragment>
+
 
     );
   }
 }
 
-export default App;
+export default withRouter(App);

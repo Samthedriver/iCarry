@@ -30,7 +30,7 @@ class LoginForm extends React.Component {
       console.log(json)
       localStorage.setItem('token', json.token)
       this.props.updateUserInfo(json.user_info)
-      this.props.history.push('/profile')
+      
     })
   };
 

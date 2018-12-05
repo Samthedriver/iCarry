@@ -2,6 +2,7 @@ import React from 'react'
 import PackageImage from '../package.jpeg'
 import Geocode from "react-geocode";
 import geolib from 'geolib';
+import MapMarkerContainer from '../Container/MapMarkerContainer.js'
 
 Geocode.setApiKey("AIzaSyBq4yvCqpuZ3v9hUwmQ59npgHg9USG0vwg");
 const convertToMiles = 1609.344
@@ -10,18 +11,19 @@ class TransactionCard extends React.Component {
   constructor(){
     super();
     this.state = {
+      origin: null,
+      destination: null,
+      pickup: null,
+      dropoff: null,
       distance: null
     }
 
   }
 
   componentDidMount(){
-
-    if(this.props.type==='track')
-      return;
-
     let address = '';
-    if(this.props.status[this.props.statusIndex] === "picked up by carrier")
+
+    if(this.props.type==='track' || this.props.status[this.props.statusIndex] === "picked up by carrier")
       address = this.props.transaction.dropoffLocal
     else
       address = this.props.transaction.pickupLocal
@@ -47,6 +49,8 @@ class TransactionCard extends React.Component {
 
         const distance = (geolib.getDistance(origin, destination) / convertToMiles).toFixed(2);
         this.setState({
+          origin: origin,
+          destination: destination,
           distance: distance
         })
       },
@@ -58,34 +62,50 @@ class TransactionCard extends React.Component {
 
   render() {
     return (
+
       <div className="ui column">
+        <div className="ui column">
+          {
+            (!this.state.origin) ? null :
+            <MapMarkerContainer
+              origin={this.state.origin}
+              destination={this.state.destination}
+              status={this.props.transaction.status}/>
+          }
 
-        <div className="ui card" onClick={() => {this.props.handleClick(this.props.transaction)}}>
-          <div className="content">
-            <div className="Medium Header">
-            {
-              this.props.type === 'carrier' ?
-                <h3>{this.state.distance}-Distance(miles)</h3>
-                :
-                <h3>Tracking #{((this.props.transaction.id * 12345) + 54321)}</h3>
-            }
+        </div>
+
+        <div className="ui column">
+          <div className="ui card" onClick={() => {this.props.handleClick(this.props.transaction)}}>
+            <div className="content">
+              <div className="Medium Header">
+              {
+                this.props.type === 'carrier' ?
+                  <h3>{this.state.distance}-Distance(miles)</h3>
+                  :
+                  <h3>Tracking #{((this.props.transaction.id * 12345) + 54321)}</h3>
+              }
+              </div>
             </div>
-          </div>
-          <div className="image">
-            <img alt={PackageImage} src={this.props.transaction.image} />
-          </div>
 
-          <div className="extra content">
-            <span>
-              <h3>Status-{this.props.transaction.status}</h3>
-            </span>
+            <div className="image">
+              <img alt={PackageImage} src={this.props.transaction.image} />
+            </div>
 
-            <span>
-              <p>Pickup Point:{this.props.transaction.pickupLocal}</p>
-            </span>
-            <span>
-              <p>Dropoff Point:{this.props.transaction.dropoffLocal}</p>
-            </span>
+            <div className="extra content">
+              <span>
+                <h3>Status-{this.props.transaction.status}</h3>
+              </span>
+
+              <span>
+                <p>Pickup Point:{this.props.transaction.pickupLocal}</p>
+              </span>
+              <span>
+                <p>Dropoff Point:{this.props.transaction.dropoffLocal}</p>
+              </span>
+            </div>
+
+
           </div>
         </div>
       </div>
