@@ -75,7 +75,7 @@ class TransactionDetailModal extends Component {
             null
           }
           {
-            this.props.logged_in ?
+            this.props.logged_in && this.props.transaction.status != 'delivered' ? 
 
             <Button
               basic

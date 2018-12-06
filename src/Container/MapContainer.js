@@ -93,22 +93,29 @@ class MapContainer extends Component {
       height: '40%'
     }
 
-    const transactionList = this.props.allTransactions.filter(
-      transaction =>
-        (
+    let transactionList = [];
+
+    if (this.props.viewType === 'next stop') {
+      transactionList = this.props.allTransactions
+    }
+    else {
+      transactionList = this.props.allTransactions.filter(
+        transaction =>
           (
             (
-              (this.props.viewType === 'history')
+              (
+                (this.props.viewType === 'history')
+                ||
+                (this.props.viewType === 'track')
+              )
               ||
-              (this.props.viewType === 'track')
+              (transaction.status === this.props.status[this.props.statusIndex])
             )
-            ||
-            (transaction.status === this.props.status[this.props.statusIndex])
+            &&
+            (transaction.user_id == this.props.user_id)
           )
-          &&
-          (transaction.user_id == this.props.user_id)
         )
-      )
+    }
 
     return (
         <div>

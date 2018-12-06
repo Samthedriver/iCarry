@@ -122,8 +122,8 @@ class SignUpForm extends Component {
 
         <Form.Group widths='equal'>
           <Form.Input fluid label='Username' placeholder='Username' name='username' onChange={this.handleChange}/>
-          <Form.Input fluid label='Password' placeholder='Password' name='password' onChange={this.handleChange}/>
-          <Form.Input fluid label='Re-type Password' placeholder='Re-type Password' name='passwordRetype' onChange={this.handleChange}/>
+          <Form.Input fluid label='Password' placeholder='Password' name='password' type='password' onChange={this.handleChange}/>
+          <Form.Input fluid label='Re-type Password' placeholder='Re-type Password' type='password' name='passwordRetype' onChange={this.handleChange}/>
         </Form.Group>
 
         <Form.Group widths='equal'>

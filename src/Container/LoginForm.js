@@ -30,7 +30,7 @@ class LoginForm extends React.Component {
       console.log(json)
       localStorage.setItem('token', json.token)
       this.props.updateUserInfo(json.user_info)
-      
+
     })
   };
 
@@ -53,11 +53,13 @@ class LoginForm extends React.Component {
               name='username'
               onChange={this.handleChange}
               value={this.state.username}
+              
             />
             <Form.Input
               fluid label='Password'
               placeholder='Password'
               name='password'
+              type='password'
               onChange={this.handleChange}
               value={this.state.password}
             />

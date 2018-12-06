@@ -356,16 +356,22 @@ class App extends Component {
             path="/nextstop"
             render=
             {
-              () =>
-                <NextStop
-                  userInfo={this.state.userInfo}
-                  user_id={this.state.userInfo.id}
-                  status={status}
-                  statusIndex={2}
-                  allTransactions={this.state.allTransactions}
-                  onSelectTransaction={this.onSelectTransaction}
-                  currentPosition={this.state.currentPosition}
-                />
+              () => {
+
+                return (
+                  <NextStop
+                    userInfo={this.state.userInfo}
+                    user_id={this.state.userInfo.id}
+                    status={status}
+                    statusIndex={2}
+                    allTransactions={this.state.allTransactions}
+                    onSelectTransaction={this.onSelectTransaction}
+                    currentPosition={this.state.currentPosition}
+                    logged_in={!!this.state.userInfo}
+                    showModal={this.showModal}
+                  />
+                )
+              }
             }
           />
 

@@ -2,6 +2,7 @@ import React from 'react'
 import TransactionCollection from './TransactionCollection.js'
 import Geocode from "react-geocode";
 import geolib from 'geolib';
+import MapContainer from './MapContainer.js'
 
 Geocode.setApiKey("AIzaSyBq4yvCqpuZ3v9hUwmQ59npgHg9USG0vwg");
 const convertToMiles = 1609.344
@@ -71,29 +72,36 @@ class NextStop extends React.Component {
       const transactionList = this.props.allTransactions.filter(transaction =>  ((transaction.status === "Assigned") || (transaction.status === "picked up by carrier")) && (transaction.user_id == this.props.user_id));
 
       let message = '';
-      let address = ''
+      let address = '';
+      let coordinates = {};
 
       console.log(transactionList)
       if (this.statusIndex === 1){
         message = ' Pickup at: '
         address = this.state.shortestTransaction.pickupLocal
+        coordinates = this.state.shortestTransaction.pickupCoordinates
       }
       else {
         message = ' Dropoff at: '
         address = this.state.shortestTransaction.dropoffLocal
+        coordinates = this.state.shortestTransaction.dropoffCoordinates
       }
 
       return (
         <div>
           <h2>Next Stop{message}{address}</h2>
-          <TransactionCollection
+          <h3>Traveling distance ({(this.state.shortestDistance/ convertToMiles).toFixed(2)}) miles.</h3>
+
+          <MapContainer
+            transaction={this.state.shortestTransaction}
+            allTransactions={[this.state.shortestTransaction]}
+            currentPosition={coordinates}
+            logged_in={this.props.logged_in}
             userInfo={this.props.userInfo}
             user_id={this.props.userInfo.id}
-            status={this.props.status}
-            statusIndex={this.state.statusIndex}
-            allTransactions={[this.state.shortestTransaction]}
-            onSelectTransaction={this.props.onSelectTransaction}
-            currentPosition={this.props.currentPosition}
+            viewType='next stop'
+            zoom={14}
+            showModal={this.props.showModal}
           />
         </div>
       )
@@ -102,10 +110,12 @@ class NextStop extends React.Component {
 
   export default NextStop
 
-  // userInfo={this.state.userInfo}
-  // user_id={this.state.userInfo.id}
-  // status={status}
-  // statusIndex={2}
-  // allTransactions={this.state.allTransactions}
-  // onSelectTransaction={this.onSelectTransaction}
-  // currentPosition={this.state.currentPosition}
+  // <TransactionCollection
+  //   userInfo={this.props.userInfo}
+  //   user_id={this.props.userInfo.id}
+  //   status={this.props.status}
+  //   statusIndex={this.state.statusIndex}
+  //   allTransactions={[this.state.shortestTransaction]}
+  //   onSelectTransaction={this.props.onSelectTransaction}
+  //   currentPosition={this.props.currentPosition}
+  // />
