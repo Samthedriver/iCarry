@@ -4,7 +4,7 @@ import deliverLogo from './deliverLogo.jpg'
 import { Link, NavLink, withRouter } from 'react-router-dom'
 
 
-const NavBar = ({ location: { pathname }, userInfo, logged_in, logout, searchPath, handleSearchChange}) => {
+const NavBar = ({ location: { pathname }, showProfileModal, userInfo, logged_in, logout, searchPath, handleSearchChange}) => {
   return (
     <Segment inverted>
       <Menu inverted secondary>
@@ -14,9 +14,13 @@ const NavBar = ({ location: { pathname }, userInfo, logged_in, logout, searchPat
             <Fragment>
               <Menu.Item
                 as={NavLink}
-                to="/profile"
+                to="/"
+                name="Home"
+                active={pathname === "/"}
+              />
+              <Menu.Item
                 name="Profile"
-                active={pathname === "/profile"}
+                onClick={showProfileModal}
               />
               <Menu.Item
                 as={NavLink}
@@ -65,6 +69,12 @@ const NavBar = ({ location: { pathname }, userInfo, logged_in, logout, searchPat
 
           (
             <Fragment>
+              <Menu.Item
+                as={NavLink}
+                to="/"
+                name="Home"
+                active={pathname === "/"}
+              />
               <Menu.Item
                 as={NavLink}
                 to="/login"

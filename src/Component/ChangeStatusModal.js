@@ -1,7 +1,9 @@
 import React from 'react'
 import { Button, Header, Icon, Modal } from 'semantic-ui-react'
+import PackageImage from '../package.jpeg'
 
-const AddPickupModal = (props) => (
+
+const ChangeStatusModal = (props) => (
   <Modal open={props.open}>
     <Header icon='plus' content='Status Update' />
     <Modal.Content>
@@ -20,4 +22,4 @@ const AddPickupModal = (props) => (
   </Modal>
 )
 
-export default AddPickupModal
+export default ChangeStatusModal

@@ -14,6 +14,10 @@ import MapContainer from './Container/MapContainer.js'
 import NextStop from './Container/NextStop.js'
 import GeoSelect from './Container/GeoSelect.js';
 import Geocode from "react-geocode";
+import TransactionDetailModal from './Component/copyTransactionDetailModal.js'
+import ChangeStatusModal from './Component/ChangeStatusModal.js'
+import ProfileModal from './Component/ProfileModal.js'
+
 
 
 class App extends Component {
@@ -41,7 +45,10 @@ class App extends Component {
       searchPath: '',
       userInfo : null,
       currentPosition: null,
-      nextStop: {}
+      nextStop: {},
+      showModal: false,
+      showNestedModal: false,
+      showProfileModal: false
     }
   }
 
@@ -119,17 +126,122 @@ class App extends Component {
     this.props.history.push('/');
   }
 
-  onSelectTransaction = (transaction) => {
+  onSelectTransaction = (newTransaction) => {
+
+    let copyAllTransactions = [...this.state.allTransactions]
+    let oldTransaction = copyAllTransactions.find(transaction => transaction.id === newTransaction.id)
+    copyAllTransactions[copyAllTransactions.indexOf(oldTransaction)] = newTransaction;
+
     this.setState({
-      selectedTransaction: transaction
+      selectedTransaction: newTransaction,
+      allTransactions: copyAllTransactions
     })
-    console.log(transaction)
+    console.log(newTransaction)
+  }
+
+  getStatusIndex = (status) => {
+    const statusArray = ["initiated", "Assigned", "picked up by carrier", "delivered"]
+
+    return statusArray.indexOf(status)
+
+  }
+
+  handleNo = () => {
+    console.log("No!")
+    this.setState({
+      isOpen: !this.state.isOpen
+    });
+  }
+
+  handleYes = () => {
+
+    const status = ["initiated", "Assigned", "picked up by carrier", "delivered"]
+    let transaction = this.state.selectedTransaction;
+    let statusIndex = this.getStatusIndex(transaction.status)
+    console.log("Yes!")
+    console.log(this.state.userInfo.id)
+    let url = `http://localhost:3001/api/v1/transactions/${transaction.id}`
+    fetch(url, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(
+        {
+          transaction: {
+            user_id: this.state.userInfo.id,
+            status: status[statusIndex + 1]
+          }
+        })
+      })
+    	.then(response => response.json())
+      		.then(data => {
+        			console.log(data)
+              let copyAllTransactions = [...this.state.allTransactions]
+              copyAllTransactions[copyAllTransactions.indexOf(transaction)] = data;
+
+              this.setState({
+                selectedTransaction: data,
+                allTransactions: copyAllTransactions,
+                showNestedModal: !this.state.showNestedModal,
+                showModal: !this.state.showModal
+              })
+ 		 })
   }
 
   handleSubmit = (transaction) => {
+
     this.setState({
         allTransactions: [...this.state.allTransactions, transaction]
       })
+
+  }
+
+  showModal = (transaction) => {
+    console.log('transaction is clicked!')
+    this.setState({
+      showModal: !this.state.showModal,
+      selectedTransaction: transaction
+    });
+  }
+
+  closeModal = () => {
+
+    this.setState({
+      showModal: !this.state.showModal
+    })
+  }
+
+  showNestedModal = () => {
+    this.setState({
+      showNestedModal: !this.state.showNestedModal
+    })
+  }
+
+  closeNestedModal = () => {
+    this.setState({
+      showNestedModal: !this.state.showNestedModal
+    })
+  }
+
+  showProfileModal = () => {
+    this.setState({
+      showProfileModal: !this.state.showProfileModal
+    });
+  }
+
+  closeProfileModal = () => {
+
+    this.setState({
+      showProfileModal: !this.state.showProfileModal
+    })
+  }
+
+  handleClick = () => {
+    console.log('change status is clicked!')
+    this.setState({
+      isOpen: !this.state.isOpen
+    });
   }
 
   render() {
@@ -144,9 +256,39 @@ class App extends Component {
           logged_in={!!this.state.userInfo}
           logout={this.logout}
           userInfo={this.state.userInfo}
+          showProfileModal={this.showProfileModal}
         />
         <Switch>
-          <Route exact path="/" render={() => null}
+          <Route
+            exact path="/"
+            render=
+            {
+              () =>
+                {
+                  let user_id = 1
+                  let zoom = 15
+
+                  if(!!this.state.userInfo)
+                  {
+                    user_id = this.state.userInfo.id
+                    zoom = 12
+                  }
+
+                  return (
+                    (!this.state.currentPosition) ? null :
+                      <MapContainer
+                        allTransactions={this.state.allTransactions}
+                        currentPosition={this.state.currentPosition}
+                        logged_in={!!this.state.userInfo}
+                        userInfo={this.state.userInfo}
+                        user_id={user_id}
+                        viewType='history'
+                        zoom={zoom}
+                        showModal={this.showModal}
+                      />
+                  )
+                }
+            }
           />
 
           <Route exact path='/signup' component={SignUpForm}/>
@@ -154,8 +296,6 @@ class App extends Component {
           <Route exact path="/login" render={() =>
             <LoginForm updateUserInfo={this.updateUserInfo}/>} />
 
-          <Route exact path="/profile" render={() =>
-            <Profile userInfo={this.state.userInfo}/>}/>
 
           <Route
             exact
@@ -229,13 +369,12 @@ class App extends Component {
             }
           />
 
-          <Route exact path='/send' component={SendForm}/>
           <Route
             exact
             path="/send"
             render=
             {
-              () =>
+              (props) =>
                 <SendForm
                   handleSumbit={this.handleSumbit}
                 />
@@ -253,22 +392,58 @@ class App extends Component {
                 console.log(transactionId)
                 let transaction = this.state.allTransactions.find(transaction => transaction.id === transactionId)
                 console.log(transaction)
-                return <TransactionCard
-                          transaction={transaction}
-                          type='track'
-                          currentPosition={this.state.currentPosition}/>
+
+                let user_id = 1
+                let zoom = 17
+
+                return (
+                  (!this.state.currentPosition) ? null :
+                    <MapContainer
+                      transaction={transaction}
+                      allTransactions={this.state.allTransactions}
+                      currentPosition={transaction.pickupCoordinates}
+                      logged_in={!!this.state.userInfo}
+                      userInfo={this.state.userInfo}
+                      user_id={user_id}
+                      viewType='track'
+                      zoom={zoom}
+                      showModal={this.showModal}
+                    />
+                )
               }
             }
           />
           <Route component={NotFound} />
         </Switch>
         {
-          (!this.state.currentPosition) ? null :
-            <MapContainer
-              allTransactions={this.state.allTransactions}
+          this.state.selectedTransaction === null ? null :
+          <Fragment>
+            <TransactionDetailModal
+              open={this.state.showModal}
+              transaction={this.state.selectedTransaction}
+              closeModal={this.closeModal}
               currentPosition={this.state.currentPosition}
+              status={status}
+              logged_in={!!this.state.userInfo}
+              userInfo={this.state.userInfo}
+              showNestedModal={this.showNestedModal}
+
             />
+            <ChangeStatusModal
+              status={status}
+              statusIndex={this.getStatusIndex(this.state.selectedTransaction.status)}
+              open={this.state.showNestedModal}
+              handleYes={this.handleYes}
+              handleNo={this.closeNestedModal}
+              transaction={this.state.selectedTransaction}
+            />
+          </Fragment>
         }
+        <ProfileModal
+          open={this.state.showProfileModal}
+          closeModal={this.closeProfileModal}
+          userInfo={this.state.userInfo}
+        />
       </Fragment>
 
 

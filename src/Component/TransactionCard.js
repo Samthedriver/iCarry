@@ -62,19 +62,6 @@ class TransactionCard extends React.Component {
 
   render() {
     return (
-
-      <div className="ui column">
-        <div className="ui column">
-          {
-            (!this.state.origin) ? null :
-            <MapMarkerContainer
-              origin={this.state.origin}
-              destination={this.state.destination}
-              status={this.props.transaction.status}/>
-          }
-
-        </div>
-
         <div className="ui column">
           <div className="ui card" onClick={() => {this.props.handleClick(this.props.transaction)}}>
             <div className="content">
@@ -108,7 +95,6 @@ class TransactionCard extends React.Component {
 
           </div>
         </div>
-      </div>
     );
   }
 
